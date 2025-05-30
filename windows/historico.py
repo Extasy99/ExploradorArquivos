@@ -1,7 +1,7 @@
 # Exibir histórico de operações
 
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, Frame
 from database.banco import conectar_banco
 
 # Configuração de cores
@@ -12,28 +12,38 @@ COR_LISTA = "#333333"  # Cinza escuro
 
 def exibir_historico():
     from windows.janela_principal import janela
-    
+
     janela_historico = tk.Toplevel(janela)
     janela_historico.title("Histórico de Operações")
     janela_historico.geometry("800x400")
     janela_historico.configure(bg=COR_FUNDO)
-    
-    # Cria a tabela
+
+    # Força o tema 'clam' para permitir personalização do cabeçalho
     style = ttk.Style()
-    style.configure("Treeview", 
-                   background=COR_LISTA,
-                   foreground=COR_TEXTO,
-                   fieldbackground=COR_LISTA)
-    style.configure("Treeview.Heading",
-                   background=COR_BOTAO,
-                   foreground=COR_TEXTO)
-    
-    tabela = ttk.Treeview(janela_historico, columns=("Data/Hora", "Operação", "Caminho"), show="headings")
+    style.theme_use('clam')
+    style.configure("Custom.Treeview",
+                    background=COR_LISTA,
+                    foreground=COR_TEXTO,
+                    fieldbackground=COR_LISTA,
+                    bordercolor=COR_FUNDO,
+                    borderwidth=0)
+    style.configure("Custom.Treeview.Heading",
+                    background="#6100FD",   # Cor de fundo do cabeçalho
+                    foreground="#FFFFFF",   # Cor da fonte do cabeçalho
+                    font=("Arial", 10, "bold"))
+    style.map("Custom.Treeview", background=[("selected", "#cc0000")])
+
+    tabela = ttk.Treeview(
+        janela_historico,
+        columns=("Data/Hora", "Operação", "Caminho"),
+        show="headings",
+        style="Custom.Treeview"
+    )
     tabela.heading("Data/Hora", text="Data/Hora")
     tabela.heading("Operação", text="Operação")
     tabela.heading("Caminho", text="Caminho")
     tabela.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-    
+
     try:
         # Buscar dados do banco
         conn = conectar_banco()
@@ -45,27 +55,27 @@ def exibir_historico():
         """)
         registros = cursor.fetchall()
         conn.close()
-        
+
         # Inserir dados na tabela
         for registro in registros:
             tabela.insert("", "end", values=registro)
-            
+
         if not registros:
-            tk.Label(janela_historico, 
-                    text="Nenhum registro encontrado no histórico.",
-                    bg=COR_FUNDO,
-                    fg=COR_TEXTO).pack(pady=10)
+            tk.Label(janela_historico,
+                     text="Nenhum registro encontrado no histórico.",
+                     bg=COR_FUNDO,
+                     fg=COR_TEXTO).pack(pady=10)
     except Exception as e:
-        tk.Label(janela_historico, 
-                text=f"Erro ao buscar histórico: {e}",
-                bg=COR_FUNDO,
-                fg=COR_TEXTO).pack(pady=10)
-    
+        tk.Label(janela_historico,
+                 text=f"Erro ao buscar histórico: {e}",
+                 bg=COR_FUNDO,
+                 fg=COR_TEXTO).pack(pady=10)
+
     # Botão para fechar
-    tk.Button(janela_historico, 
-              text="Fechar", 
+    tk.Button(janela_historico,
+              text="Fechar",
               command=janela_historico.destroy,
               bg="#FF5252",  # Vermelho para o botão de fechar
               fg=COR_TEXTO,
               activebackground="#FF5252",
-              activeforeground=COR_TEXTO).pack(pady=10) 
+              activeforeground=COR_TEXTO).pack(pady=10)
